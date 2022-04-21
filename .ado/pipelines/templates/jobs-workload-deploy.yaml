@@ -116,6 +116,11 @@ jobs: # using jobs so they each run in parallel
             $fullContainerImageName = Get-Content -Path "$(Pipeline.Workspace)/catalogservice-containerImageName/catalogservice.txt"
             echo "*** Retrieved full container image name from artifact - $fullContainerImageName"
 
+            $keyVaultName = $stamp.key_vault_name
+
+            $allSecretNames = $(az keyvault secret list --vault-name $keyVaultName --query "join(',',[].name)" --output tsv)
+            echo "*** Retrieved the names of $($allSecretNames.Split(',').Count) secrets in Key Vault $keyVaultName"
+
             # Apply workload CatalogService helm chart
             echo "*** Deploy workload CatalogService to $aksClusterName (in $aksClusterResourceGroup) via helm chart"
             echo "*** Using container image $fullContainerImageName"
@@ -126,6 +131,7 @@ jobs: # using jobs so they each run in parallel
                          --set azure.baseurl="$frontDoorFqdn" `
                          --set containerimage="$fullContainerImageName" `
                          --set workload.domainname="$fqdn" `
+                         --set secretNames={$allSecretNames} `
                          ${{ parameters.additionalHelmArguments }}
 
             # Wait for CatalogService-deploy k8s deployment to come up
