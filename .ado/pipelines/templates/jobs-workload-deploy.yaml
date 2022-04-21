@@ -40,12 +40,18 @@ jobs: # using jobs so they each run in parallel
             $fullContainerImageName = Get-Content -Path "$(Pipeline.Workspace)/healthservice-containerImageName/healthservice.txt"
             echo "*** Retrieved container image name from artifact - $fullContainerImageName"
 
+            $keyVaultName = $stamp.key_vault_name
+
+            $allSecretNames = $(az keyvault secret list --vault-name $keyVaultName --query "join(',',[].name)" --output tsv)
+            echo "*** Retrieved the names of $($allSecretNames.Split(',').Count) secrets in Key Vault $keyVaultName"
+
             # Apply workload worker helm chart
             echo  "*** Deploy healthservice to $aksClusterName (in $aksClusterResourceGroup) via helm chart"
             helm upgrade --install healthservice-workload src/app/charts/healthservice `
                           --namespace $(workloadNamespace) `
                           --set containerimage="$fullContainerImageName" `
                           --set azure.region="$region" `
+                          --set secretNames="{$allSecretNames}" `
                           ${{ parameters.additionalHelmArguments }}
 
             # Wait for healthservice-deploy k8s deployment to come up
@@ -199,12 +205,18 @@ jobs: # using jobs so they each run in parallel
             $fullContainerImageName = Get-Content -Path "$(Pipeline.Workspace)/backgroundprocessor-containerImageName/backgroundprocessor.txt"
             echo "*** Retrieved full container image name from artifact - $fullContainerImageName"
 
+            $keyVaultName = $stamp.key_vault_name
+
+            $allSecretNames = $(az keyvault secret list --vault-name $keyVaultName --query "join(',',[].name)" --output tsv)
+            echo "*** Retrieved the names of $($allSecretNames.Split(',').Count) secrets in Key Vault $keyVaultName"
+
             # Apply workload BackgroundProcessor helm chart
             echo  "*** Deploy workload BackgroundProcessor to $aksClusterName (in $aksClusterResourceGroup) via helm chart"
             helm upgrade --install workload-backgroundprocessor src/app/charts/backgroundprocessor `
                          --namespace $(workloadNamespace) `
                          --set containerimage="$fullContainerImageName" `
                          --set azure.region="$region" `
+                         --set secretNames="{$allSecretNames}" `
                          ${{ parameters.additionalHelmArguments }}
 
             # Wait for BackgroundProcessor-deploy k8s deployment to come up
