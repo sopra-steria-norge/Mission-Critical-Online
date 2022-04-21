@@ -131,7 +131,7 @@ jobs: # using jobs so they each run in parallel
                          --set azure.baseurl="$frontDoorFqdn" `
                          --set containerimage="$fullContainerImageName" `
                          --set workload.domainname="$fqdn" `
-                         --set secretNames={$allSecretNames} `
+                         --set secretNames="{$allSecretNames}" `
                          ${{ parameters.additionalHelmArguments }}
 
             # Wait for CatalogService-deploy k8s deployment to come up
