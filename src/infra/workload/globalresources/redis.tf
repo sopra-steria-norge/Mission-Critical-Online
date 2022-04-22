@@ -1,6 +1,6 @@
 resource "azurerm_redis_enterprise_cluster" "global_replicas" {
   for_each            = toset(var.stamps)
-  name                = "example-redisenterprise"
+  name                = "${local.prefix}-${each.value}-redis"
   resource_group_name = azurerm_resource_group.global.name
   location            = each.value
 
