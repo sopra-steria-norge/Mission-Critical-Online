@@ -1,7 +1,7 @@
 resource "azurerm_redis_enterprise_cluster" "example" {
   name                = "example-redisenterprise"
   resource_group_name = azurerm_resource_group.global.name
-  location            = azurerm_resource_group.global.location
+  location            = "northeurope"
 
   sku_name = "Enterprise_E20-4"
 }
