@@ -4,11 +4,13 @@ resource "azurerm_redis_enterprise_cluster" "global_replicas" {
   resource_group_name = azurerm_resource_group.global.name
   location            = each.value
 
+  zones = ["1", "2", "3"]
+
   sku_name = "Enterprise_E10-2"
 }
 
 resource "azurerm_redis_enterprise_database" "default" {
-  name                = "default"
+  name = "default"
 
   cluster_id        = azurerm_redis_enterprise_cluster.global_replicas[var.stamps[0]].id # take the first location from the list of stamps
   client_protocol   = "Encrypted"
